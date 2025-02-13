@@ -1,0 +1,47 @@
+tasks:
+    - name: install nginx
+      ansible.builtin.dnf:
+        name: nginx
+        state: latest
+  
+    - name: start and enable nginx
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: yes
+  
+    # - name: delete default config
+    #   ansible.builtin.file:
+    #     path: /usr/share/nginx/html
+    #     state: absent
+  
+    # - name: create html dir
+    #   ansible.builtin.file:
+    #     path: /usr/share/nginx/html
+    #     state: directory
+  
+    # - name: download ans extract fromtend code
+    #   ansible.builtin.unarchive:
+    #     src: "https://expense-builds.s3.us-east-1.amazonaws.com/expense-frontend-v2.zip"
+    #     dest: /usr/share/nginx/html
+    #     remote_src: yes
+  
+     - name: run-pre app req
+       ansible.builtin.import_role:
+        name: common
+        tasks_from: app-pre-req
+
+  # if there is any change in configuration then only you need to restart for that theres something called *handlers*
+    - name: copy backend conf
+      ansible.builtin.template:
+        src: expense.conf.j2
+        dest: /etc/nginx/default.d/expense.conf
+      notify:   # here we are using this because we are telling to take the o/p from handlers and restart it.
+      - restart nginx  
+  
+    # - name: reatsrt nginx
+    #   ansible.builtin.service:
+    #     name: nginx
+    #     state: restarted
+        
+  

@@ -1,0 +1,84 @@
+tasks:
+  - name: listing,disabling and enabling modejs
+    ansible.builtin.command: dnf module disable nodejs -y
+
+  - name: enable nodejs 20
+    ansible.builtin.command: dnf module enable nodejs:20 -y
+
+  - name: install nodejs
+    ansible.builtin.dnf:
+      name: "{{item}}"
+      state: installed
+    loop:
+    - nodejs
+    - mysql
+    
+  
+  - name: user adding
+    ansible.builtin.user:
+      name: expense
+     # comment: user expense
+
+  # - name: create dir
+  #   ansible.builtin.file:
+  #     path: /app
+  #     state: directory
+
+  # - name: download file, application code
+  #   ansible.builtin.get_url:
+  #     url: https://expense-builds.s3.us-east-1.amazonaws.com/expense-backend-v2.zip
+  #     dest: /tmp/backend.zip
+
+  # - name: unzip the file
+  #   ansible.builtin.unarchive:
+  #     src: /tmp/backend.zip #by default it checks in ansible server
+  #     dest: /app
+  #     remote_src: yes
+
+  - name: run-pre app req
+    tags: #tags are uswful whenevre we are getting new version no need to install everything only specific deployments are enough for that tags are useful
+    - deployment
+    ansible.builtin.import_role:
+      name: common
+      tasks_from: app-pre-req
+
+  - name: install npm dependencies
+    ansible.builtin.command: npm install
+    args: #this one is useful for if we dont know in which path we are so we use something called args module.
+      chdir: /app
+
+  - name: copy backend service file
+    ansible.builtin.template:
+      src: backend.service.j2
+      dest: /etc/systemd/system/backend.service
+
+  - name: install mysql python dependency
+    ansible.builtin.pip:
+      name: 
+      - PyMySQL #to connect mysql db from ansible
+      - cryptography #for password if we want to use
+      executable: pip3.9 #depends on python version
+
+  - name: import data into mysql
+    community.mysql.mysql_db:
+      login_user: "{{login_user}}"
+      login_password: "{{login_password}}"
+      login_host: "{{login_host}}"
+      target: /app/schema/backend.sql #for file location
+      state: import
+      name: all
+
+  - name: restart service daemon reload
+    ansible.builtin.systemd_service:
+      daemon_reload: true
+
+  - name: start and enable
+    tags:
+    - deployment
+    ansible.builtin.service:
+      name: backend
+      state: restarted
+      enabled: yes
+
+
+

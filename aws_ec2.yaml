@@ -1,0 +1,12 @@
+plugins: amazon.aws.aws_ec2
+regions:
+
+- key: tags['Name']
+  prefix: ''
+  parent_group: ""
+
+filters:
+  tag:Name: "backend"
+
+compose:
+  ansible_host: private_ip_address

@@ -1,0 +1,5 @@
+- name: configure sql DB
+  hosts: db
+  become: yes
+  roles:
+  - db
