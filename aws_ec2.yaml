@@ -1,14 +1,13 @@
 plugin: amazon.aws.aws_ec2
 regions:
 - us-east-1
-#keyed_groups: # if you want to take specific group, names of servers we user this keyed grps
+keyed_groups: # if you want to take specific group, names of servers we user this keyed grps
+- key: tags['Name']
+  prefix: ''
+  parent_group: ""
 
-# - key: tags['Name']
-#   prefix: ''
-#   parent_group: ""
+filters:
+  tag:Name: "ansible"
 
-# filters:
-#   tag:Name: "backend"
-
-# compose:
-#   ansible_host: private_ip_address
+compose:
+  ansible_host: private_ip_address
