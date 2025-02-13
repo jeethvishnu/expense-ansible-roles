@@ -26,7 +26,7 @@ tasks:
     #     dest: /usr/share/nginx/html
     #     remote_src: yes
   
-     - name: run-pre app req
+     - name: run app-pre-req
        ansible.builtin.import_role:
         name: common
         tasks_from: app-pre-req
